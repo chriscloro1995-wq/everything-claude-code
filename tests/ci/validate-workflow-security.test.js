@@ -167,6 +167,12 @@ function run() {
     assert.match(result.stderr, /npm ci must include --ignore-scripts/);
   })) passed++; else failed++;
 
+  if (test('publishing workflow satisfies workflow security rules', () => {
+    const workflow = fs.readFileSync(path.join(__dirname, '..', '..', '.github', 'workflows', 'npm-publish.yml'), 'utf8');
+    const result = runValidator({ 'npm-publish.yml': workflow });
+    assert.strictEqual(result.status, 0, result.stderr || result.stdout);
+  })) passed++; else failed++;
+
   if (test('allows package-manager installs with lifecycle scripts disabled', () => {
     const result = runValidator({
       'safe-install.yml': `name: Safe\non:\n  pull_request:\njobs:\n  audit:\n    runs-on: ubuntu-latest\n    steps:\n      - run: |\n          npm ci --ignore-scripts\n          pnpm install --ignore-scripts --no-frozen-lockfile\n          yarn install --mode=skip-build\n          bun install --ignore-scripts\n`,
